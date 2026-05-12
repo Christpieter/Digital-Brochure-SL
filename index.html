@@ -66,10 +66,9 @@
     #pC   { top: var(--ph); z-index: 1; }
     #pBot { top: calc(var(--ph) * 2); transform-origin: top center; transition: transform 0.8s cubic-bezier(0.64, 0.04, 0.35, 1); z-index: 2; }
 
-       /* Rotasi Lipatan yang Sangat Presisi (Menempel & Anti Tabrakan) */
-       #pTop.closed { transform: rotateX(-140deg); } /* Lipat ke bawah, menyandar di atas pBot */
-    #pBot.closed { transform: rotateX(179.9deg); }  /* Lipat ke atas */
-
+    /* Rotasi Lipatan yang Sangat Presisi (Menempel & Anti Tabrakan) */
+    #pTop.closed { transform: rotateX(-179.2deg); } /* Lipat ke bawah, menyandar di atas pBot */
+    #pBot.closed { transform: rotateX(179.6deg); }  /* Lipat ke atas */
 
     /* Muka Halaman (Faces) */
     .face {
@@ -217,7 +216,7 @@
     // Variabel Deteksi Sentuh Pintar
     const pointers = {}; // Melacak semua jari di layar
     let isDragging = false; 
-    let hasMoved = false; // Membedakan klik murni dengan usapan (drag)
+    let hasMoved = false; 
     let startX = 0, startY = 0, lastTime = 0;
     let vX = 0, vY = 0;
     let clickTargetPanel = null; 
@@ -276,9 +275,9 @@
         updatePageNavUI();
     }
 
+    // Perbaikan Logika Navigasi: currentPage selalu merepresentasikan urutan VISUAL (0=Atas, 1=Tengah, 2=Bawah)
     function navPage(dir) {
-        let logicalDir = (flatState === 2) ? -dir : dir;
-        currentPage = clamp(currentPage + logicalDir, 0, 2);
+        currentPage = clamp(currentPage + dir, 0, 2);
         
         let targetPanY = calculatePanY(currentPage, flatState);
         let targetScale = Math.min(window.innerWidth / 480, window.innerHeight / 300);
@@ -288,17 +287,22 @@
         updatePageNavUI();
     }
 
-    function calculatePanY(pageIndex, state) {
-        if (state === 1) return 280 * (1 - pageIndex);
-        if (state === 2) return 280 * (pageIndex - 1);
+    // Perbaikan Kalkulasi Posisi Kamera
+    function calculatePanY(vIndex, state) {
+        // State 1 (Sisi Dalam): Kamera normal, menggeser Y secara logika asli
+        if (state === 1) { return 280 * (1 - vIndex); } 
+        // State 2 (Sisi Luar): Dunia dibalik 180 derajat. Geser Y juga berbalik arah secara visual.
+        else if (state === 2) { return 280 * (vIndex - 1); }
         return 0;
     }
 
     function updatePageNavUI() {
         let isTop = currentPage === 0;
         let isBot = currentPage === 2;
+        
         btnUp.style.opacity = isTop ? '0.3' : '1';
         btnUp.style.pointerEvents = isTop ? 'none' : 'auto';
+        
         btnDown.style.opacity = isBot ? '0.3' : '1';
         btnDown.style.pointerEvents = isBot ? 'none' : 'auto';
     }
@@ -341,19 +345,16 @@
 
     /* ══════════════════════════════════════════════════════
        DETEKSI SENTUH PINTAR (POINTER EVENTS)
-       Anti-Gagal: Otomatis bedakan Klik, Drag, dan Zoom
        ══════════════════════════════════════════════════════ */
     
     scene.addEventListener('pointerdown', (e) => {
-        // Abaikan interaksi jika klik di atas UI
         if(e.target.closest('#ui-controls') || e.target.closest('#page-nav') || e.target.closest('#reset-btn')) return;
         
         pointers[e.pointerId] = e;
         
         if (Object.keys(pointers).length === 1) {
-            // Sentuhan jari pertama -> Persiapan Drag/Klik
             isDragging = true;
-            hasMoved = false; // Reset status gerakan
+            hasMoved = false; 
             clickTargetPanel = e.target.closest('.panel');
             
             startX = e.clientX; startY = e.clientY;
@@ -361,10 +362,9 @@
             vX = 0; vY = 0;
             
             cancelAnimationFrame(animationFrame);
-            scene.setPointerCapture(e.pointerId); // Kunci fokus pointer ke layar
+            scene.setPointerCapture(e.pointerId); 
         } 
         else if (Object.keys(pointers).length === 2) {
-            // Sentuhan jari kedua -> Masuk mode Cubit (Pinch-to-Zoom)
             isDragging = false; 
             let pts = Object.values(pointers);
             initialPinchDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
@@ -375,11 +375,10 @@
 
     scene.addEventListener('pointermove', (e) => {
         if (!pointers[e.pointerId]) return;
-        pointers[e.pointerId] = e; // Perbarui posisi pointer aktif
+        pointers[e.pointerId] = e; 
 
         let activePointers = Object.values(pointers);
 
-        // Eksekusi Pinch-to-Zoom (2 Jari)
         if (activePointers.length === 2) {
             let dist = Math.hypot(activePointers[0].clientX - activePointers[1].clientX, activePointers[0].clientY - activePointers[1].clientY);
             if (initialPinchDist > 0) {
@@ -389,12 +388,10 @@
             return;
         }
 
-        // Eksekusi Drag Putar (1 Jari)
         if (isDragging && activePointers.length === 1) {
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
             
-            // Tandai 'hasMoved' jika jari bergeser lebih dari 8 pixel
             if (Math.hypot(dx, dy) > 8) hasMoved = true;
 
             if (hasMoved) {
@@ -412,7 +409,7 @@
     });
 
     function handlePointerEnd(e) {
-        delete pointers[e.pointerId]; // Hapus jari dari memori
+        delete pointers[e.pointerId]; 
 
         if (Object.keys(pointers).length < 2) initialPinchDist = -1;
 
@@ -420,11 +417,10 @@
             isDragging = false;
             scene.releasePointerCapture(e.pointerId);
             
-            // JIKA JARI TIDAK BERGESER (>8px), MAKA ITU ADALAH KLIK!
             if (!hasMoved && clickTargetPanel) {
                 handlePanelClick(clickTargetPanel);
             } else if (hasMoved) {
-                applyInertia(); // Jika digeser, lemparkan inersia (momentum)
+                applyInertia();
             }
         }
     }
@@ -432,7 +428,6 @@
     scene.addEventListener('pointerup', handlePointerEnd);
     scene.addEventListener('pointercancel', handlePointerEnd);
 
-    // Inertia Momentum
     function applyInertia() {
         cancelAnimationFrame(animationFrame);
         function tick() {
@@ -445,7 +440,6 @@
         tick();
     }
 
-    // Zoom via Scroll Wheel Mouse
     scene.addEventListener('wheel', (e) => {
         e.preventDefault();
         scale = clamp(scale - e.deltaY * 0.001, 0.3, 2.5);
@@ -453,7 +447,6 @@
         if(flatState !== 0) resetFlatModeUI();
     }, { passive: false });
 
-    // Update skala saat HP dimiringkan
     window.addEventListener('resize', () => {
         if(flatState === 0 && !isDragging) {
             targetRotation(rotX, rotY, getInitialScale(), 0);
