@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Summarecon Learning — Mobile Friendly 3D Brochure</title>
+<title>Summarecon Learning — Perfect Vertical 3D Brochure</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet">
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,22 +31,23 @@
         width: 100vw; height: 100vh; perspective: 1800px;
         display: flex; align-items: center; justify-content: center;
         cursor: grab; position: relative; z-index: 10;
+        touch-action: none; /* Kunci mencegah scroll HP bentrok dengan putaran 3D */
     }
     #scene.dragging { cursor: grabbing; }
 
     #world {
         width: 0; height: 0; transform-style: preserve-3d; will-change: transform;
-        transform: rotateX(-15deg) rotateY(15deg); /* Scale diatur oleh JavaScript */
+        transform: rotateX(-15deg) rotateY(15deg) scale(0.85);
     }
 
-    /* Absolute Positioning murni agar 3D stabil */
+    /* Posisi Absolut Murni Anti-Bug */
     #brochure {
         position: absolute;
         width: var(--pw); 
-        height: calc(var(--ph) * 3); 
+        height: calc(var(--ph) * 3); /* Total tinggi 3 panel = 840px */
         transform-style: preserve-3d;
-        left: calc(var(--pw) * -0.5); 
-        top: calc(var(--ph) * -1.5);  
+        left: calc(var(--pw) * -0.5); /* Titik tengah X */
+        top: calc(var(--ph) * -1.5);  /* Titik tengah Y */
     }
 
     .panel {
@@ -56,10 +57,11 @@
         transform-style: preserve-3d;
     }
 
+    /* Kursor tangan tanpa efek warna/filter agar tidak nge-bug */
     #pTop, #pBot { cursor: pointer; }
     #pC { cursor: default; }
 
-    /* Pengaturan Posisi & Engsel */
+    /* Posisi & Engsel Panel */
     #pTop { top: 0; transform-origin: bottom center; transition: transform 0.85s cubic-bezier(0.64, 0.04, 0.35, 1); z-index: 3; }
     #pC   { top: var(--ph); z-index: 1; }
     #pBot { top: calc(var(--ph) * 2); transform-origin: top center; transition: transform 0.8s cubic-bezier(0.64, 0.04, 0.35, 1); z-index: 2; }
@@ -73,21 +75,23 @@
     .face {
         position: absolute; inset: 0;
         backface-visibility: hidden; -webkit-backface-visibility: hidden;
-        background-color: #fff; 
+        background-color: #fff;
         background-size: 100% 100%;
         background-position: center;
         background-repeat: no-repeat;
-        border: 1px solid rgba(0,0,0,0.15);
-        transform: translateZ(1px); 
+        border: 1px solid rgba(0,0,0,0.15); 
+        transform: translateZ(1px); /* Ketebalan kertas depan */
     }
+    
     .face-back { 
-        transform: rotateX(180deg) translateZ(1px); 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+        transform: rotateX(180deg) translateZ(1px); /* Ketebalan kertas belakang */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15); /* Bayangan tumpukan kertas */
     }
 
     /* Efek Bayangan Gelap di Area Lipatan Tengah */
     .crease-bot { position: absolute; bottom: 0; left: 0; right: 0; height: 35px; background: linear-gradient(to top, rgba(0,0,0,0.25), transparent); pointer-events: none; z-index: 50; }
     .crease-top { position: absolute; top: 0; left: 0; right: 0; height: 35px; background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent); pointer-events: none; z-index: 50; }
+
 
     /* =========================================
        TATA LETAK UI & TOMBOL KONTROL
@@ -99,12 +103,12 @@
     }
     .nav-btn {
         pointer-events: auto; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #fff; font-family: 'Poppins'; font-weight: 600; font-size: 14px;
+        backdrop-filter: blur(10px); color: #fff; font-family: 'Poppins'; font-weight: 600; font-size: 14px;
         padding: 12px 26px; border-radius: 30px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     .nav-btn:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
     .nav-btn.flat-active { background: var(--green); border-color: var(--green); }
-    .hint-text { font-size: 11px; color: rgba(255,255,255,0.8); letter-spacing: 1px; text-transform: uppercase; background: rgba(0,0,0,0.4); padding: 6px 16px; border-radius: 20px; text-align: center; }
+    .hint-text { font-size: 11px; color: rgba(255,255,255,0.8); letter-spacing: 1px; text-transform: uppercase; background: rgba(0,0,0,0.4); padding: 6px 16px; border-radius: 20px; }
 
     #reset-btn { 
         position: fixed; top: 25px; right: 25px; pointer-events: auto; 
@@ -121,21 +125,19 @@
     .page-btn {
         background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255,255,255,0.5);
         color: white; width: 48px; height: 48px; border-radius: 50%; font-size: 18px; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
     .page-btn:hover { background: var(--orange); border-color: var(--orange); transform: scale(1.1); }
     .page-btn:active { transform: scale(0.95); }
 
-    /* =========================================
-       RESPONSIF UNTUK LAYAR MOBILE
-       ========================================= */
+    /* Responsif untuk HP agar UI tidak kebesaran */
     @media (max-width: 600px) {
         .nav-btn { padding: 10px 22px; font-size: 12px; }
         #ui-controls { bottom: 20px; gap: 8px; }
         #reset-btn { top: 15px; right: 15px; font-size: 10px; padding: 6px 12px; }
         #page-nav { right: 10px; gap: 10px; }
         .page-btn { width: 42px; height: 42px; font-size: 16px; }
-        .hint-text { font-size: 9px; padding: 5px 12px; max-width: 90%; }
+        .hint-text { font-size: 9px; padding: 5px 12px; }
     }
 </style>
 </head>
@@ -148,7 +150,7 @@
 
     <div id="ui-controls">
         <button class="nav-btn" id="btn-flat" onclick="toggleFlatView()">🔍 Mode Datar</button>
-        <div class="hint-text">👆 Klik buka/lipat • Drag memutar • Cubit untuk Zoom</div>
+        <div class="hint-text">👆 Klik panel buka/lipat • Drag memutar • Cubit Zoom</div>
     </div>
 
     <div id="page-nav">
@@ -161,9 +163,10 @@
             <div id="brochure">
                 
                 <div class="panel closed" id="pTop">
-                    <div class="face" style="background-color: #f4f4f4; background-image: url('asset/isi1.png');">
+                    <div class="face" style="background-color: #f4f4f4; background-image: url('./asset/isi1.png');">
                         <div class="crease-bot"></div>
                     </div>
+
                     <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/atas.png');">
                     </div>
                 </div>
@@ -171,6 +174,7 @@
                 <div class="panel" id="pC">
                     <div class="face" style="background-color: #ffffff; background-image: url('asset/isi3.png');">
                     </div>
+
                     <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/belakang.png');">
                     </div>
                 </div>
@@ -179,6 +183,7 @@
                     <div class="face" style="background-color: #f4f4f4; background-image: url('asset/isi2.png');">
                         <div class="crease-top"></div>
                     </div>
+
                     <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/keyboard.png');">
                     </div>
                 </div>
@@ -197,29 +202,27 @@
     const btnUp = document.getElementById('btn-up');
     const btnDown = document.getElementById('btn-down');
 
-    // Variabel State Tampilan
+    // Variabel Layar Utama
     let flatState = 0; 
     let currentPage = 1; 
     let rotX = -15, rotY = 15, panY = 0;
     
-    // Auto-Scale menyesuaikan dengan ukuran layar perangkat
-    function getBaseScale() {
-        if (window.innerWidth < 600) {
-            // Untuk layar HP, sesuaikan skala agar panel 460px muat sempurna
-            return (window.innerWidth / 500);
-        }
-        return 0.85; // Default PC
+    // Auto-Scale Awal (Responsif HP)
+    function getInitialScale() {
+        if (window.innerWidth < 500) return window.innerWidth / 520;
+        return 0.85;
     }
-    let scale = getBaseScale();
+    let scale = getInitialScale();
 
-    // Deteksi Pointer & Multitouch
-    let pointers = {}; // Menyimpan jari yang sedang menyentuh layar
-    let prevPinchDist = -1; // Jarak jari sebelumnya untuk fitur Zoom
-    
-    let isDragging = false;
+    // Variabel Deteksi Sentuh Pintar
+    const pointers = {}; // Melacak semua jari di layar
+    let isDragging = false; 
+    let hasMoved = false; // Membedakan klik murni dengan usapan (drag)
     let startX = 0, startY = 0, lastTime = 0;
-    let clickStartX = 0, clickStartY = 0, clickTime = 0;
+    let vX = 0, vY = 0;
     let clickTargetPanel = null; 
+    let initialPinchDist = -1;
+    let initialScale = 1;
     let animationFrame = null;
 
     const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
@@ -227,10 +230,9 @@
     function applyTransform() {
         world.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale}) translateY(${panY}px)`;
     }
-    // Set skala awal perangkat
     applyTransform();
 
-    // -- LOGIKA KLIK PANEL --
+    // -- FUNGSI BUKA/TUTUP HALAMAN --
     function handlePanelClick(panel) {
         if (!panel || panel.id === 'pC') return; 
         if (flatState !== 0) resetFlatModeUI();
@@ -245,10 +247,10 @@
         targetRotation(targetRotX, rotY, scale, 0);
     }
 
-    // -- MODE DATAR VERTICAL --
+    // -- FUNGSI MODE DATAR & NAVIGASI --
     function toggleFlatView() {
-        let targetScale = Math.min(window.innerWidth / 500, window.innerHeight / 320); 
-        targetScale = clamp(targetScale, 0.3, 2.0); 
+        let targetScale = Math.min(window.innerWidth / 480, window.innerHeight / 300); 
+        targetScale = clamp(targetScale, 0.4, 2.0); 
 
         if (flatState === 0) {
             pTop.classList.remove('closed');
@@ -265,7 +267,7 @@
             btnFlat.textContent = 'Kembali ke 3D';
         } else {
             resetFlatModeUI();
-            targetRotation(-15, 15, getBaseScale(), 0);
+            targetRotation(-15, 15, getInitialScale(), 0);
             return;
         }
 
@@ -279,26 +281,24 @@
         currentPage = clamp(currentPage + logicalDir, 0, 2);
         
         let targetPanY = calculatePanY(currentPage, flatState);
-        let targetScale = Math.min(window.innerWidth / 500, window.innerHeight / 320);
-        targetScale = clamp(targetScale, 0.3, 2.0);
+        let targetScale = Math.min(window.innerWidth / 480, window.innerHeight / 300);
+        targetScale = clamp(targetScale, 0.4, 2.0);
 
         targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY);
         updatePageNavUI();
     }
 
     function calculatePanY(pageIndex, state) {
-        if (state === 1) { return 280 * (1 - pageIndex); } 
-        else if (state === 2) { return 280 * (pageIndex - 1); }
+        if (state === 1) return 280 * (1 - pageIndex);
+        if (state === 2) return 280 * (pageIndex - 1);
         return 0;
     }
 
     function updatePageNavUI() {
         let isTop = currentPage === 0;
         let isBot = currentPage === 2;
-        
         btnUp.style.opacity = isTop ? '0.3' : '1';
         btnUp.style.pointerEvents = isTop ? 'none' : 'auto';
-        
         btnDown.style.opacity = isBot ? '0.3' : '1';
         btnDown.style.pointerEvents = isBot ? 'none' : 'auto';
     }
@@ -339,99 +339,100 @@
         requestAnimationFrame(animate);
     }
 
-    // -- EVENT SENTUHAN & DRAG MOBILE-FRIENDLY --
+    /* ══════════════════════════════════════════════════════
+       DETEKSI SENTUH PINTAR (POINTER EVENTS)
+       Anti-Gagal: Otomatis bedakan Klik, Drag, dan Zoom
+       ══════════════════════════════════════════════════════ */
+    
     scene.addEventListener('pointerdown', (e) => {
+        // Abaikan interaksi jika klik di atas UI
         if(e.target.closest('#ui-controls') || e.target.closest('#page-nav') || e.target.closest('#reset-btn')) return;
         
-        e.preventDefault();
-        scene.setPointerCapture(e.pointerId);
-        
-        // Simpan data sentuhan jari
         pointers[e.pointerId] = e;
         
-        // Jika jari yang menempel lebih dari satu, batalkan proses Drag/Klik (bersiap untuk Pinch Zoom)
-        if (Object.keys(pointers).length > 1) {
+        if (Object.keys(pointers).length === 1) {
+            // Sentuhan jari pertama -> Persiapan Drag/Klik
+            isDragging = true;
+            hasMoved = false; // Reset status gerakan
+            clickTargetPanel = e.target.closest('.panel');
+            
+            startX = e.clientX; startY = e.clientY;
+            lastTime = performance.now();
+            vX = 0; vY = 0;
+            
+            cancelAnimationFrame(animationFrame);
+            scene.setPointerCapture(e.pointerId); // Kunci fokus pointer ke layar
+        } 
+        else if (Object.keys(pointers).length === 2) {
+            // Sentuhan jari kedua -> Masuk mode Cubit (Pinch-to-Zoom)
             isDragging = false; 
-            return;
+            let pts = Object.values(pointers);
+            initialPinchDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
+            initialScale = scale;
+            if(flatState !== 0) resetFlatModeUI();
         }
-
-        isDragging = true;
-        clickTargetPanel = e.target.closest('.panel');
-        
-        startX = e.clientX; startY = e.clientY; 
-        clickStartX = e.clientX; clickStartY = e.clientY; 
-        lastTime = clickTime = performance.now();
-        vX = vY = 0; 
-        cancelAnimationFrame(animationFrame);
-        scene.classList.add('dragging');
-
-        if(flatState !== 0) resetFlatModeUI();
     });
 
     scene.addEventListener('pointermove', (e) => {
-        // Perbarui data sentuhan yang bergerak
-        if (pointers[e.pointerId]) pointers[e.pointerId] = e;
+        if (!pointers[e.pointerId]) return;
+        pointers[e.pointerId] = e; // Perbarui posisi pointer aktif
 
         let activePointers = Object.values(pointers);
-        
-        // PINCH-TO-ZOOM (Jika 2 jari bergerak di layar)
+
+        // Eksekusi Pinch-to-Zoom (2 Jari)
         if (activePointers.length === 2) {
             let dist = Math.hypot(activePointers[0].clientX - activePointers[1].clientX, activePointers[0].clientY - activePointers[1].clientY);
-            if (prevPinchDist > 0) {
-                let delta = dist - prevPinchDist;
-                scale = clamp(scale + delta * 0.005, 0.3, 3.0);
+            if (initialPinchDist > 0) {
+                scale = clamp(initialScale * (dist / initialPinchDist), 0.3, 3.0);
                 applyTransform();
-                if(flatState !== 0) resetFlatModeUI();
             }
-            prevPinchDist = dist;
-            return; // Hentikan fungsi sampai di sini (jangan lakukan drag)
+            return;
         }
 
-        // DRAG MEMUTAR BROSUR (Hanya jika 1 jari / 1 mouse)
-        if (!isDragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const now = performance.now();
-        const dt = Math.max(now - lastTime, 1);
-        
-        vY = (dx / dt) * 12; vX = -(dy / dt) * 12;
-        rotY += dx * 0.4; rotX = clamp(rotX - dy * 0.4, -80, 260);
-        
-        startX = e.clientX; startY = e.clientY; lastTime = now;
-        applyTransform();
+        // Eksekusi Drag Putar (1 Jari)
+        if (isDragging && activePointers.length === 1) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            // Tandai 'hasMoved' jika jari bergeser lebih dari 8 pixel
+            if (Math.hypot(dx, dy) > 8) hasMoved = true;
+
+            if (hasMoved) {
+                const dt = Math.max(performance.now() - lastTime, 1);
+                vY = (dx / dt) * 12; 
+                vX = -(dy / dt) * 12;
+                rotY += dx * 0.4; 
+                rotX = clamp(rotX - dy * 0.4, -80, 260);
+                
+                startX = e.clientX; startY = e.clientY; 
+                lastTime = performance.now();
+                applyTransform();
+            }
+        }
     });
 
-    function handlePointerUp(e) {
-        // Hapus jari yang diangkat dari memori
-        delete pointers[e.pointerId];
-        
-        // Reset jarak Pinch Zoom jika jari yang tersisa kurang dari 2
-        if (Object.keys(pointers).length < 2) {
-            prevPinchDist = -1;
-        }
+    function handlePointerEnd(e) {
+        delete pointers[e.pointerId]; // Hapus jari dari memori
 
-        // Proses klik / lemparan inersia hanya jika SEMUA jari sudah diangkat
-        if (Object.keys(pointers).length === 0) {
-            if(!isDragging) return;
+        if (Object.keys(pointers).length < 2) initialPinchDist = -1;
+
+        if (isDragging) {
             isDragging = false;
-            scene.classList.remove('dragging');
-
-            let dt = performance.now() - clickTime;
-            let dist = Math.hypot(e.clientX - clickStartX, e.clientY - clickStartY);
+            scene.releasePointerCapture(e.pointerId);
             
-            // Toleransi jarak sentuh ditingkatkan (30px) agar jari jempol mudah mengeklik
-            if (dist < 30 && dt < 400 && clickTargetPanel) {
+            // JIKA JARI TIDAK BERGESER (>8px), MAKA ITU ADALAH KLIK!
+            if (!hasMoved && clickTargetPanel) {
                 handlePanelClick(clickTargetPanel);
-            } else {
-                applyInertia();
+            } else if (hasMoved) {
+                applyInertia(); // Jika digeser, lemparkan inersia (momentum)
             }
         }
     }
 
-    scene.addEventListener('pointerup', handlePointerUp);
-    scene.addEventListener('pointercancel', handlePointerUp);
-    scene.addEventListener('pointerout', handlePointerUp);
+    scene.addEventListener('pointerup', handlePointerEnd);
+    scene.addEventListener('pointercancel', handlePointerEnd);
 
+    // Inertia Momentum
     function applyInertia() {
         cancelAnimationFrame(animationFrame);
         function tick() {
@@ -452,17 +453,16 @@
         if(flatState !== 0) resetFlatModeUI();
     }, { passive: false });
 
-    // Update skala otomatis saat perangkat diputar (Landscape/Portrait)
+    // Update skala saat HP dimiringkan
     window.addEventListener('resize', () => {
         if(flatState === 0 && !isDragging) {
-            let targetScale = getBaseScale();
-            targetRotation(rotX, rotY, targetScale, 0);
+            targetRotation(rotX, rotY, getInitialScale(), 0);
         }
     });
 
     function resetView() {
         resetFlatModeUI();
-        targetRotation(-15, 15, getBaseScale(), 0);
+        targetRotation(-15, 15, getInitialScale(), 0);
     }
 </script>
 </body>
