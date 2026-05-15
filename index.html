@@ -275,7 +275,9 @@
     // Variabel Layar Utama
     let flatState = 0; 
     let currentPage = 1; 
-    let rotX = -15, rotY = 15, panY = 0;
+    
+    // PERUBAHAN: Menambahkan variabel panX untuk menggeser ke kiri dan kanan
+    let rotX = -15, rotY = 15, panY = 0, panX = 0;
     
     function getInitialScale() {
         if (window.innerWidth < 500) return window.innerWidth / 520;
@@ -297,7 +299,8 @@
     const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
     function applyTransform() {
-        world.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale}) translateY(${panY}px)`;
+        // PERUBAHAN: Memasukkan translateX(panX) agar brosur bisa digeser ke samping
+        world.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale}) translateX(${panX}px) translateY(${panY}px)`;
     }
     applyTransform();
 
@@ -307,17 +310,14 @@
     let currentGuideStep = 1;
 
     function updateGuide() {
-        // Hentikan jika panduan sudah selesai (Step > 4)
         if (currentGuideStep > 4) {
             document.querySelectorAll('.guide-box').forEach(el => el.classList.remove('active'));
             return;
         }
 
-        // Sembunyikan semua terlebih dahulu
         document.querySelectorAll('.guide-box').forEach(el => el.classList.remove('active'));
 
         if (currentGuideStep === 1) {
-            // Jika pengguna sudah buka atas duluan tanpa disuruh
             if (!pTop.classList.contains('closed')) {
                 currentGuideStep = 2; updateGuide();
             } else {
@@ -325,10 +325,9 @@
             }
         } 
         else if (currentGuideStep === 2) {
-            // Jika pengguna sudah buka bawah
             if (!pBot.classList.contains('closed')) {
                 currentGuideStep = 3; 
-                setTimeout(updateGuide, 850); // Jeda agar animasi panel selesai
+                setTimeout(updateGuide, 850); 
             } else {
                 document.getElementById('guide-2').classList.add('active');
             }
@@ -336,19 +335,17 @@
         else if (currentGuideStep === 3) {
             if (flatState !== 0) {
                 currentGuideStep = 4; 
-                setTimeout(updateGuide, 850); // Jeda agar kamera muter
+                setTimeout(updateGuide, 850); 
             } else {
                 document.getElementById('guide-3').classList.add('active');
             }
         }
         else if (currentGuideStep === 4) {
-            // Muncul hanya jika ada di mode datar
             if (flatState === 1) {
                 document.getElementById('guide-4').classList.add('active');
             }
         }
     }
-    // Mulai panduan saat web diload
     updateGuide();
 
     // ==========================================
@@ -364,9 +361,9 @@
         }
 
         let targetRotX = pTop.classList.contains('closed') ? -20 : -5;
-        targetRotation(targetRotX, rotY, scale, 0);
+        // PERUBAHAN: Menambahkan parameter ke-5 (0) untuk panX
+        targetRotation(targetRotX, rotY, scale, 0, 0);
 
-        // Update Panduan setelah klik
         updateGuide();
     }
 
@@ -389,21 +386,18 @@
             btnFlat.textContent = 'Kembali ke 3D';
         } else {
             resetFlatModeUI();
-            targetRotation(-15, 15, getInitialScale(), 0);
+            targetRotation(-15, 15, getInitialScale(), 0, 0);
             updateGuide();
             return;
         }
 
         let targetPanY = calculatePanY(currentPage, flatState);
-        targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY);
+        targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY, 0);
         updatePageNavUI();
-
-        // Update Panduan setelah klik tombol
         updateGuide();
     }
 
     function navPage(dir) {
-        // Hilangkan panduan terakhir selamanya jika user klik up/down
         if (currentGuideStep === 4) {
             currentGuideStep = 5; 
             updateGuide();
@@ -415,7 +409,8 @@
         let targetScale = Math.min(window.innerWidth / 480, window.innerHeight / 300);
         targetScale = clamp(targetScale, 0.4, 2.0);
 
-        targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY);
+        // Otomatis menengahkan halaman (panX kembali ke 0) setiap pindah navigasi
+        targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY, 0);
         updatePageNavUI();
     }
 
@@ -442,12 +437,13 @@
         btnFlat.classList.remove('flat-active');
         pageNav.style.display = 'none';
         
-        if(panY !== 0) {
-            let sPan = panY;
+        if(panY !== 0 || panX !== 0) {
+            let sPanY = panY, sPanX = panX;
             let sTime = performance.now();
             function resetPanAnim() {
                 let p = Math.min((performance.now() - sTime) / 300, 1);
-                panY = sPan * (1 - p);
+                panY = sPanY * (1 - p);
+                panX = sPanX * (1 - p);
                 applyTransform();
                 if(p < 1 && isDragging) requestAnimationFrame(resetPanAnim);
             }
@@ -455,9 +451,10 @@
         }
     }
 
-    function targetRotation(targetX, targetY, targetScale, targetPanY) {
+    // PERUBAHAN: Mendukung animasi panX 
+    function targetRotation(targetX, targetY, targetScale, targetPanY, targetPanX = 0) {
         cancelAnimationFrame(animationFrame);
-        let sX = rotX, sY = rotY, sScale = scale, sPanY = panY;
+        let sX = rotX, sY = rotY, sScale = scale, sPanY = panY, sPanX = panX;
         let sTime = performance.now();
         function animate(time) {
             let progress = Math.min((time - sTime) / 600, 1);
@@ -466,14 +463,17 @@
             rotY = sY + (targetY - sY) * ease;
             scale = sScale + (targetScale - sScale) * ease;
             panY = sPanY + (targetPanY - sPanY) * ease;
+            panX = sPanX + (targetPanX - sPanX) * ease;
             applyTransform();
             if (progress < 1) requestAnimationFrame(animate);
         }
         requestAnimationFrame(animate);
     }
 
- /* DETEKSI SENTUH PINTAR */
- scene.addEventListener('pointerdown', (e) => {
+    /* ==========================================
+       DETEKSI SENTUH PINTAR 
+       ========================================== */
+    scene.addEventListener('pointerdown', (e) => {
         if(e.target.closest('#ui-controls') || e.target.closest('#page-nav') || e.target.closest('#reset-btn')) return;
         
         pointers[e.pointerId] = e;
@@ -495,8 +495,6 @@
             let pts = Object.values(pointers);
             initialPinchDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
             initialScale = scale;
-            // PERUBAHAN: Dihapus agar saat dicubit (pinch zoom), mode datar tidak tertutup
-            // if(flatState !== 0) resetFlatModeUI(); 
         }
     });
 
@@ -523,13 +521,27 @@
 
             if (hasMoved) {
                 const dt = Math.max(performance.now() - lastTime, 1);
-                vY = (dx / dt) * 12; 
-                vX = -(dy / dt) * 12;
                 
-                // PERUBAHAN: Hanya izinkan memutar 3D jika sedang TIDAK di mode datar
+                // Mode 3D: Drag untuk memutar
                 if (flatState === 0) {
+                    vY = (dx / dt) * 12; 
+                    vX = -(dy / dt) * 12;
                     rotY += dx * 0.4; 
                     rotX = clamp(rotX - dy * 0.4, -80, 260);
+                } 
+                // Mode Datar: Drag untuk menggeser/pan halaman
+                else {
+                    vX = (dx / dt) * 12; 
+                    vY = (dy / dt) * 12; 
+                    
+                    let moveX = dx / scale;
+                    let moveY = dy / scale;
+                    
+                    // Kalau di sisi belakang brosur, arah sumbu Y secara visual terbalik
+                    if (flatState === 2) moveY = -moveY; 
+                    
+                    panX += moveX;
+                    panY += moveY;
                 }
                 
                 startX = e.clientX; startY = e.clientY; 
@@ -564,10 +576,18 @@
         function tick() {
             if (Math.abs(vX) < 0.05 && Math.abs(vY) < 0.05) return;
             
-            // PERUBAHAN: Inertia memutar hanya jalan jika tidak di mode datar
             if (flatState === 0) {
+                // Inersia putaran di mode 3D
                 rotX = clamp(rotX + vX, -80, 260); 
                 rotY += vY;
+            } else {
+                // Inersia geseran (pan) di mode datar
+                let moveX = vX / scale;
+                let moveY = vY / scale;
+                if (flatState === 2) moveY = -moveY;
+                
+                panX += moveX * 0.4; // Multiplier kelembutan luncuran
+                panY += moveY * 0.4;
             }
             
             vX *= 0.92; vY *= 0.92;
@@ -581,20 +601,18 @@
         e.preventDefault();
         scale = clamp(scale - e.deltaY * 0.001, 0.3, 2.5);
         applyTransform();
-        // PERUBAHAN: Dihapus agar scroll/zoom tidak menutup mode datar otomatis
-        // if(flatState !== 0) resetFlatModeUI();
     }, { passive: false });
 
     window.addEventListener('resize', () => {
         if(flatState === 0 && !isDragging) {
-            targetRotation(rotX, rotY, getInitialScale(), 0);
+            targetRotation(rotX, rotY, getInitialScale(), 0, 0);
         }
     });
 
     function resetView() {
         resetFlatModeUI();
-        targetRotation(-15, 15, getInitialScale(), 0);
-        if (currentGuideStep < 5) updateGuide();
+        targetRotation(-15, 15, getInitialScale(), 0, 0);
+        if (currentGuideStep < 5) updateGuide(); 
     }
 </script>
 </body>
