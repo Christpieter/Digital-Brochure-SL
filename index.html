@@ -122,23 +122,16 @@
        FITUR BARU: NAVIGASI PANDUAN (GUIDED TOUR)
        ========================================= */
     .guide-box {
-        position: absolute;
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none; /* Tidak menghalangi klik ke panel */
-        z-index: 1500;
+        position: absolute; display: none; flex-direction: column;
+        align-items: center; justify-content: center;
+        pointer-events: none; z-index: 1500;
     }
     .guide-box.active { display: flex; }
     
     .guide-dot {
-        width: 36px; height: 36px;
-        background: rgba(240, 123, 29, 0.2);
-        border: 2px solid var(--orange);
-        border-radius: 50%;
-        position: relative;
-        animation: pulseRing 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+        width: 36px; height: 36px; background: rgba(240, 123, 29, 0.2);
+        border: 2px solid var(--orange); border-radius: 50%;
+        position: relative; animation: pulseRing 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
     }
     .guide-dot::after {
         content: ''; position: absolute; top: 50%; left: 50%;
@@ -151,19 +144,16 @@
         margin-top: 12px; background: rgba(0,0,0,0.85); color: #fff;
         padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
         border: 1px solid rgba(240, 123, 29, 0.5); text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        backdrop-filter: blur(4px);
-        animation: floatUpDown 2s ease-in-out infinite;
-        white-space: nowrap;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+        animation: floatUpDown 2s ease-in-out infinite; white-space: nowrap;
     }
 
     /* Penempatan Spesifik Panduan */
-    /* Guide 1 & 2 berada di dalam ruang 3D, jadi posisinya persentase dari panel */
     #guide-1 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     #guide-2 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     
-    /* Guide 3 & 4 berada di ruang UI (Layar Datar 2D) */
-    #guide-3 { bottom: 90px; left: 50%; transform: translateX(-50%); position: fixed; }
+    /* Guide 3, 5, 6 menunjuk ke posisi tombol utama */
+    #guide-3, #guide-5, #guide-6 { bottom: 90px; left: 50%; transform: translateX(-50%); position: fixed; }
     
     #guide-4 { top: 50%; right: 80px; transform: translateY(-50%); position: fixed; flex-direction: row; }
     #guide-4 .guide-text { margin-top: 0; margin-right: 15px; }
@@ -186,11 +176,10 @@
         .page-btn { width: 42px; height: 42px; font-size: 16px; }
         .hint-text { font-size: 9px; padding: 5px 12px; }
 
-        /* Responsif Panduan */
         .guide-text { font-size: 11px; padding: 6px 12px; }
         .guide-dot { width: 30px; height: 30px; }
         .guide-dot::after { width: 10px; height: 10px; }
-        #guide-3 { bottom: 75px; }
+        #guide-3, #guide-5, #guide-6 { bottom: 75px; }
         #guide-4 { right: 65px; }
         #guide-4 .guide-text { margin-right: 10px; }
     }
@@ -208,11 +197,20 @@
         <div class="hint-text">👆 Klik panel buka/lipat • Drag memutar • Cubit Zoom</div>
     </div>
 
-    <!-- UI Panduan 3 & 4 (2D Screen Space) -->
+    <!-- UI Panduan Baru -->
     <div class="guide-box" id="guide-3">
-        <div class="guide-text" style="margin-top:0; margin-bottom:12px;">Klik Untuk Masuk ke Mode Datar</div>
+        <div class="guide-text" style="margin-top:0; margin-bottom:12px;">Klik untuk Masuk ke Mode Datar</div>
         <div class="guide-dot"></div>
     </div>
+    <div class="guide-box" id="guide-5">
+        <div class="guide-text" style="margin-top:0; margin-bottom:12px;">Klik untuk Melihat Sisi Luar</div>
+        <div class="guide-dot"></div>
+    </div>
+    <div class="guide-box" id="guide-6">
+        <div class="guide-text" style="margin-top:0; margin-bottom:12px;">Klik untuk Kembali ke Tampilan 3D</div>
+        <div class="guide-dot"></div>
+    </div>
+
     <div class="guide-box" id="guide-4">
         <div class="guide-text">Gunakan ini untuk<br>berpindah halaman</div>
         <div class="guide-dot"></div>
@@ -232,10 +230,10 @@
                         <div class="crease-bot"></div>
                     </div>
                     <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/atas.png');">
-                        <!-- UI Panduan 1 (Nempel di 3D Backface Atas) -->
+                        <!-- UI Panduan 1 -->
                         <div class="guide-box" id="guide-1">
                             <div class="guide-dot"></div>
-                            <div class="guide-text">Klik disini untuk buka<br>bagian atas</div>
+                            <div class="guide-text">Klik di sini Untuk Buka<br>Bagian Atas</div>
                         </div>
                     </div>
                 </div>
@@ -250,10 +248,10 @@
                         <div class="crease-top"></div>
                     </div>
                     <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/keyboard.png');">
-                        <!-- UI Panduan 2 (Nempel di 3D Backface Bawah) -->
+                        <!-- UI Panduan 2 -->
                         <div class="guide-box" id="guide-2">
                             <div class="guide-dot"></div>
-                            <div class="guide-text">Klik disini untuk buka<br>bagian bawah</div>
+                            <div class="guide-text">Klik di sini Untuk Buka<br>Bagian Bawah</div>
                         </div>
                     </div>
                 </div>
@@ -272,11 +270,8 @@
     const btnUp = document.getElementById('btn-up');
     const btnDown = document.getElementById('btn-down');
 
-    // Variabel Layar Utama
     let flatState = 0; 
     let currentPage = 1; 
-    
-    // PERUBAHAN: Menambahkan variabel panX untuk menggeser ke kiri dan kanan
     let rotX = -15, rotY = 15, panY = 0, panX = 0;
     
     function getInitialScale() {
@@ -285,32 +280,27 @@
     }
     let scale = getInitialScale();
 
-    // Variabel Deteksi Sentuh
     const pointers = {}; 
-    let isDragging = false; 
-    let hasMoved = false; 
-    let startX = 0, startY = 0, lastTime = 0;
-    let vX = 0, vY = 0;
+    let isDragging = false, hasMoved = false; 
+    let startX = 0, startY = 0, lastTime = 0, vX = 0, vY = 0;
     let clickTargetPanel = null; 
-    let initialPinchDist = -1;
-    let initialScale = 1;
+    let initialPinchDist = -1, initialScale = 1;
     let animationFrame = null;
 
     const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
     function applyTransform() {
-        // PERUBAHAN: Memasukkan translateX(panX) agar brosur bisa digeser ke samping
         world.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale}) translateX(${panX}px) translateY(${panY}px)`;
     }
     applyTransform();
 
     // ==========================================
-    // LOGIKA FITUR PANDUAN (GUIDE SYSTEM)
+    // LOGIKA FITUR PANDUAN (GUIDE SYSTEM) DIUPDATE
     // ==========================================
     let currentGuideStep = 1;
 
     function updateGuide() {
-        if (currentGuideStep > 4) {
+        if (currentGuideStep > 6) {
             document.querySelectorAll('.guide-box').forEach(el => el.classList.remove('active'));
             return;
         }
@@ -343,6 +333,28 @@
         else if (currentGuideStep === 4) {
             if (flatState === 1) {
                 document.getElementById('guide-4').classList.add('active');
+            } else if (flatState === 2) {
+                currentGuideStep = 6; updateGuide(); // Jika user iseng melewati tahap
+            } else if (flatState === 0) {
+                currentGuideStep = 7; updateGuide();
+            }
+        }
+        else if (currentGuideStep === 5) {
+            if (flatState === 2) {
+                currentGuideStep = 6; 
+                setTimeout(updateGuide, 850);
+            } else if (flatState === 0) {
+                currentGuideStep = 7; updateGuide();
+            } else {
+                document.getElementById('guide-5').classList.add('active');
+            }
+        }
+        else if (currentGuideStep === 6) {
+            if (flatState === 0) {
+                currentGuideStep = 7; 
+                updateGuide();
+            } else {
+                document.getElementById('guide-6').classList.add('active');
             }
         }
     }
@@ -361,7 +373,6 @@
         }
 
         let targetRotX = pTop.classList.contains('closed') ? -20 : -5;
-        // PERUBAHAN: Menambahkan parameter ke-5 (0) untuk panX
         targetRotation(targetRotX, rotY, scale, 0, 0);
 
         updateGuide();
@@ -394,12 +405,12 @@
         let targetPanY = calculatePanY(currentPage, flatState);
         targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY, 0);
         updatePageNavUI();
-        updateGuide();
+        updateGuide(); // Memanggil trigger panduan tahap 5 & 6
     }
 
     function navPage(dir) {
         if (currentGuideStep === 4) {
-            currentGuideStep = 5; 
+            currentGuideStep = 5; // Munculkan panduan lihat sisi luar
             updateGuide();
         }
 
@@ -409,7 +420,6 @@
         let targetScale = Math.min(window.innerWidth / 480, window.innerHeight / 300);
         targetScale = clamp(targetScale, 0.4, 2.0);
 
-        // Otomatis menengahkan halaman (panX kembali ke 0) setiap pindah navigasi
         targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY, 0);
         updatePageNavUI();
     }
@@ -451,7 +461,6 @@
         }
     }
 
-    // PERUBAHAN: Mendukung animasi panX 
     function targetRotation(targetX, targetY, targetScale, targetPanY, targetPanX = 0) {
         cancelAnimationFrame(animationFrame);
         let sX = rotX, sY = rotY, sScale = scale, sPanY = panY, sPanX = panX;
@@ -470,9 +479,7 @@
         requestAnimationFrame(animate);
     }
 
-    /* ==========================================
-       DETEKSI SENTUH PINTAR 
-       ========================================== */
+    /* DETEKSI SENTUH PINTAR */
     scene.addEventListener('pointerdown', (e) => {
         if(e.target.closest('#ui-controls') || e.target.closest('#page-nav') || e.target.closest('#reset-btn')) return;
         
@@ -522,24 +529,18 @@
             if (hasMoved) {
                 const dt = Math.max(performance.now() - lastTime, 1);
                 
-                // Mode 3D: Drag untuk memutar
                 if (flatState === 0) {
                     vY = (dx / dt) * 12; 
                     vX = -(dy / dt) * 12;
                     rotY += dx * 0.4; 
                     rotX = clamp(rotX - dy * 0.4, -80, 260);
                 } 
-                // Mode Datar: Drag untuk menggeser/pan halaman
                 else {
                     vX = (dx / dt) * 12; 
                     vY = (dy / dt) * 12; 
-                    
                     let moveX = dx / scale;
                     let moveY = dy / scale;
-                    
-                    // Kalau di sisi belakang brosur, arah sumbu Y secara visual terbalik
                     if (flatState === 2) moveY = -moveY; 
-                    
                     panX += moveX;
                     panY += moveY;
                 }
@@ -577,16 +578,13 @@
             if (Math.abs(vX) < 0.05 && Math.abs(vY) < 0.05) return;
             
             if (flatState === 0) {
-                // Inersia putaran di mode 3D
                 rotX = clamp(rotX + vX, -80, 260); 
                 rotY += vY;
             } else {
-                // Inersia geseran (pan) di mode datar
                 let moveX = vX / scale;
                 let moveY = vY / scale;
                 if (flatState === 2) moveY = -moveY;
-                
-                panX += moveX * 0.4; // Multiplier kelembutan luncuran
+                panX += moveX * 0.4; 
                 panY += moveY * 0.4;
             }
             
@@ -612,7 +610,7 @@
     function resetView() {
         resetFlatModeUI();
         targetRotation(-15, 15, getInitialScale(), 0, 0);
-        if (currentGuideStep < 5) updateGuide(); 
+        if (currentGuideStep < 7) updateGuide(); // Update batas sinkronisasi panduan
     }
 </script>
 </body>
