@@ -31,7 +31,7 @@
         width: 100vw; height: 100vh; perspective: 1800px;
         display: flex; align-items: center; justify-content: center;
         cursor: grab; position: relative; z-index: 10;
-        touch-action: none; /* Kunci mencegah scroll HP bentrok dengan putaran 3D */
+        touch-action: none; 
     }
     #scene.dragging { cursor: grabbing; }
 
@@ -40,57 +40,47 @@
         transform: rotateX(-15deg) rotateY(15deg) scale(0.85);
     }
 
-    /* Posisi Absolut Murni Anti-Bug */
     #brochure {
         position: absolute;
         width: var(--pw); 
-        height: calc(var(--ph) * 3); /* Total tinggi 3 panel = 840px */
+        height: calc(var(--ph) * 3);
         transform-style: preserve-3d;
-        left: calc(var(--pw) * -0.5); /* Titik tengah X */
-        top: calc(var(--ph) * -1.5);  /* Titik tengah Y */
+        left: calc(var(--pw) * -0.5);
+        top: calc(var(--ph) * -1.5);
     }
 
     .panel {
         position: absolute;
         width: var(--pw); height: var(--ph);
-        left: 0;
-        transform-style: preserve-3d;
+        left: 0; transform-style: preserve-3d;
     }
 
-    /* Kursor tangan tanpa efek warna/filter agar tidak nge-bug */
     #pTop, #pBot { cursor: pointer; }
     #pC { cursor: default; }
 
-    /* Posisi & Engsel Panel */
     #pTop { top: 0; transform-origin: bottom center; transition: transform 0.85s cubic-bezier(0.64, 0.04, 0.35, 1); z-index: 3; }
     #pC   { top: var(--ph); z-index: 1; }
     #pBot { top: calc(var(--ph) * 2); transform-origin: top center; transition: transform 0.8s cubic-bezier(0.64, 0.04, 0.35, 1); z-index: 2; }
 
-       /* Rotasi Lipatan yang Sangat Presisi (Menempel & Anti Tabrakan) */
-       #pTop.closed { transform: rotateX(-140deg); } /* Lipat ke bawah, menyandar di atas pBot */
-    #pBot.closed { transform: rotateX(179.9deg); }  /* Lipat ke atas */
+    #pTop.closed { transform: rotateX(-140deg); } 
+    #pBot.closed { transform: rotateX(179.9deg); }  
 
-    /* Muka Halaman (Faces) */
     .face {
         position: absolute; inset: 0;
         backface-visibility: hidden; -webkit-backface-visibility: hidden;
-        background-color: #fff;
-        background-size: 100% 100%;
-        background-position: center;
-        background-repeat: no-repeat;
+        background-color: #fff; background-size: 100% 100%;
+        background-position: center; background-repeat: no-repeat;
         border: 1px solid rgba(0,0,0,0.15); 
-        transform: translateZ(1px); /* Ketebalan kertas depan */
+        transform: translateZ(1px); 
     }
     
     .face-back { 
-        transform: rotateX(180deg) translateZ(1px); /* Ketebalan kertas belakang */
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15); /* Bayangan tumpukan kertas */
+        transform: rotateX(180deg) translateZ(1px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
     }
 
-    /* Efek Bayangan Gelap di Area Lipatan Tengah */
     .crease-bot { position: absolute; bottom: 0; left: 0; right: 0; height: 35px; background: linear-gradient(to top, rgba(0,0,0,0.25), transparent); pointer-events: none; z-index: 50; }
     .crease-top { position: absolute; top: 0; left: 0; right: 0; height: 35px; background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent); pointer-events: none; z-index: 50; }
-
 
     /* =========================================
        TATA LETAK UI & TOMBOL KONTROL
@@ -116,7 +106,6 @@
     }
     #reset-btn:hover { background: rgba(255,255,255,0.2); }
 
-    /* Navigasi Halaman Mode Datar */
     #page-nav { 
         position: fixed; right: 25px; top: 50%; transform: translateY(-50%); 
         display: none; flex-direction: column; gap: 15px; z-index: 1000; 
@@ -129,7 +118,66 @@
     .page-btn:hover { background: var(--orange); border-color: var(--orange); transform: scale(1.1); }
     .page-btn:active { transform: scale(0.95); }
 
-    /* Responsif untuk HP agar UI tidak kebesaran */
+    /* =========================================
+       FITUR BARU: NAVIGASI PANDUAN (GUIDED TOUR)
+       ========================================= */
+    .guide-box {
+        position: absolute;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none; /* Tidak menghalangi klik ke panel */
+        z-index: 1500;
+    }
+    .guide-box.active { display: flex; }
+    
+    .guide-dot {
+        width: 36px; height: 36px;
+        background: rgba(240, 123, 29, 0.2);
+        border: 2px solid var(--orange);
+        border-radius: 50%;
+        position: relative;
+        animation: pulseRing 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+    .guide-dot::after {
+        content: ''; position: absolute; top: 50%; left: 50%;
+        width: 12px; height: 12px; background: var(--orange);
+        border-radius: 50%; transform: translate(-50%, -50%);
+        box-shadow: 0 0 10px var(--orange);
+    }
+
+    .guide-text {
+        margin-top: 12px; background: rgba(0,0,0,0.85); color: #fff;
+        padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+        border: 1px solid rgba(240, 123, 29, 0.5); text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        backdrop-filter: blur(4px);
+        animation: floatUpDown 2s ease-in-out infinite;
+        white-space: nowrap;
+    }
+
+    /* Penempatan Spesifik Panduan */
+    /* Guide 1 & 2 berada di dalam ruang 3D, jadi posisinya persentase dari panel */
+    #guide-1 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    #guide-2 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    
+    /* Guide 3 & 4 berada di ruang UI (Layar Datar 2D) */
+    #guide-3 { bottom: 90px; left: 50%; transform: translateX(-50%); position: fixed; }
+    
+    #guide-4 { top: 50%; right: 80px; transform: translateY(-50%); position: fixed; flex-direction: row; }
+    #guide-4 .guide-text { margin-top: 0; margin-right: 15px; }
+
+    @keyframes pulseRing { 
+        0% { box-shadow: 0 0 0 0 rgba(240, 123, 29, 0.6); } 
+        70% { box-shadow: 0 0 0 20px rgba(240, 123, 29, 0); } 
+        100% { box-shadow: 0 0 0 0 rgba(240, 123, 29, 0); } 
+    }
+    @keyframes floatUpDown { 
+        0%, 100% { transform: translateY(0); } 
+        50% { transform: translateY(-8px); } 
+    }
+
     @media (max-width: 600px) {
         .nav-btn { padding: 10px 22px; font-size: 12px; }
         #ui-controls { bottom: 20px; gap: 8px; }
@@ -137,6 +185,14 @@
         #page-nav { right: 10px; gap: 10px; }
         .page-btn { width: 42px; height: 42px; font-size: 16px; }
         .hint-text { font-size: 9px; padding: 5px 12px; }
+
+        /* Responsif Panduan */
+        .guide-text { font-size: 11px; padding: 6px 12px; }
+        .guide-dot { width: 30px; height: 30px; }
+        .guide-dot::after { width: 10px; height: 10px; }
+        #guide-3 { bottom: 75px; }
+        #guide-4 { right: 65px; }
+        #guide-4 .guide-text { margin-right: 10px; }
     }
 </style>
 </head>
@@ -152,6 +208,16 @@
         <div class="hint-text">👆 Klik panel buka/lipat • Drag memutar • Cubit Zoom</div>
     </div>
 
+    <!-- UI Panduan 3 & 4 (2D Screen Space) -->
+    <div class="guide-box" id="guide-3">
+        <div class="guide-text" style="margin-top:0; margin-bottom:12px;">Klik Untuk Masuk ke Mode Datar</div>
+        <div class="guide-dot"></div>
+    </div>
+    <div class="guide-box" id="guide-4">
+        <div class="guide-text">Gunakan ini untuk<br>berpindah halaman</div>
+        <div class="guide-dot"></div>
+    </div>
+
     <div id="page-nav">
         <button class="page-btn" id="btn-up" onclick="navPage(-1)">▲</button>
         <button class="page-btn" id="btn-down" onclick="navPage(1)">▼</button>
@@ -165,25 +231,30 @@
                     <div class="face" style="background-color: #f4f4f4; background-image: url('./asset/isi1.png');">
                         <div class="crease-bot"></div>
                     </div>
-
                     <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/atas.png');">
+                        <!-- UI Panduan 1 (Nempel di 3D Backface Atas) -->
+                        <div class="guide-box" id="guide-1">
+                            <div class="guide-dot"></div>
+                            <div class="guide-text">Klik disini untuk buka<br>bagian atas</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="panel" id="pC">
-                    <div class="face" style="background-color: #ffffff; background-image: url('asset/isi3.png');">
-                    </div>
-
-                    <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/belakang.png');">
-                    </div>
+                    <div class="face" style="background-color: #ffffff; background-image: url('asset/isi3.png');"></div>
+                    <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/belakang.png');"></div>
                 </div>
 
                 <div class="panel closed" id="pBot">
                     <div class="face" style="background-color: #f4f4f4; background-image: url('asset/isi2.png');">
                         <div class="crease-top"></div>
                     </div>
-
                     <div class="face face-back" style="background-color: #e5e5e5; background-image: url('asset/keyboard.png');">
+                        <!-- UI Panduan 2 (Nempel di 3D Backface Bawah) -->
+                        <div class="guide-box" id="guide-2">
+                            <div class="guide-dot"></div>
+                            <div class="guide-text">Klik disini untuk buka<br>bagian bawah</div>
+                        </div>
                     </div>
                 </div>
 
@@ -206,15 +277,14 @@
     let currentPage = 1; 
     let rotX = -15, rotY = 15, panY = 0;
     
-    // Auto-Scale Awal (Responsif HP)
     function getInitialScale() {
         if (window.innerWidth < 500) return window.innerWidth / 520;
         return 0.85;
     }
     let scale = getInitialScale();
 
-    // Variabel Deteksi Sentuh Pintar
-    const pointers = {}; // Melacak semua jari di layar
+    // Variabel Deteksi Sentuh
+    const pointers = {}; 
     let isDragging = false; 
     let hasMoved = false; 
     let startX = 0, startY = 0, lastTime = 0;
@@ -231,7 +301,58 @@
     }
     applyTransform();
 
-    // -- FUNGSI BUKA/TUTUP HALAMAN --
+    // ==========================================
+    // LOGIKA FITUR PANDUAN (GUIDE SYSTEM)
+    // ==========================================
+    let currentGuideStep = 1;
+
+    function updateGuide() {
+        // Hentikan jika panduan sudah selesai (Step > 4)
+        if (currentGuideStep > 4) {
+            document.querySelectorAll('.guide-box').forEach(el => el.classList.remove('active'));
+            return;
+        }
+
+        // Sembunyikan semua terlebih dahulu
+        document.querySelectorAll('.guide-box').forEach(el => el.classList.remove('active'));
+
+        if (currentGuideStep === 1) {
+            // Jika pengguna sudah buka atas duluan tanpa disuruh
+            if (!pTop.classList.contains('closed')) {
+                currentGuideStep = 2; updateGuide();
+            } else {
+                document.getElementById('guide-1').classList.add('active');
+            }
+        } 
+        else if (currentGuideStep === 2) {
+            // Jika pengguna sudah buka bawah
+            if (!pBot.classList.contains('closed')) {
+                currentGuideStep = 3; 
+                setTimeout(updateGuide, 850); // Jeda agar animasi panel selesai
+            } else {
+                document.getElementById('guide-2').classList.add('active');
+            }
+        }
+        else if (currentGuideStep === 3) {
+            if (flatState !== 0) {
+                currentGuideStep = 4; 
+                setTimeout(updateGuide, 850); // Jeda agar kamera muter
+            } else {
+                document.getElementById('guide-3').classList.add('active');
+            }
+        }
+        else if (currentGuideStep === 4) {
+            // Muncul hanya jika ada di mode datar
+            if (flatState === 1) {
+                document.getElementById('guide-4').classList.add('active');
+            }
+        }
+    }
+    // Mulai panduan saat web diload
+    updateGuide();
+
+    // ==========================================
+
     function handlePanelClick(panel) {
         if (!panel || panel.id === 'pC') return; 
         if (flatState !== 0) resetFlatModeUI();
@@ -244,9 +365,11 @@
 
         let targetRotX = pTop.classList.contains('closed') ? -20 : -5;
         targetRotation(targetRotX, rotY, scale, 0);
+
+        // Update Panduan setelah klik
+        updateGuide();
     }
 
-    // -- FUNGSI MODE DATAR & NAVIGASI --
     function toggleFlatView() {
         let targetScale = Math.min(window.innerWidth / 480, window.innerHeight / 300); 
         targetScale = clamp(targetScale, 0.4, 2.0); 
@@ -267,16 +390,25 @@
         } else {
             resetFlatModeUI();
             targetRotation(-15, 15, getInitialScale(), 0);
+            updateGuide();
             return;
         }
 
         let targetPanY = calculatePanY(currentPage, flatState);
         targetRotation(flatState === 1 ? 0 : 180, 0, targetScale, targetPanY);
         updatePageNavUI();
+
+        // Update Panduan setelah klik tombol
+        updateGuide();
     }
 
-    // Perbaikan Logika Navigasi: currentPage selalu merepresentasikan urutan VISUAL (0=Atas, 1=Tengah, 2=Bawah)
     function navPage(dir) {
+        // Hilangkan panduan terakhir selamanya jika user klik up/down
+        if (currentGuideStep === 4) {
+            currentGuideStep = 5; 
+            updateGuide();
+        }
+
         currentPage = clamp(currentPage + dir, 0, 2);
         
         let targetPanY = calculatePanY(currentPage, flatState);
@@ -287,11 +419,8 @@
         updatePageNavUI();
     }
 
-    // Perbaikan Kalkulasi Posisi Kamera
     function calculatePanY(vIndex, state) {
-        // State 1 (Sisi Dalam): Kamera normal, menggeser Y secara logika asli
         if (state === 1) { return 280 * (1 - vIndex); } 
-        // State 2 (Sisi Luar): Dunia dibalik 180 derajat. Geser Y juga berbalik arah secara visual.
         else if (state === 2) { return 280 * (vIndex - 1); }
         return 0;
     }
@@ -343,11 +472,8 @@
         requestAnimationFrame(animate);
     }
 
-    /* ══════════════════════════════════════════════════════
-       DETEKSI SENTUH PINTAR (POINTER EVENTS)
-       ══════════════════════════════════════════════════════ */
-    
-    scene.addEventListener('pointerdown', (e) => {
+ /* DETEKSI SENTUH PINTAR */
+ scene.addEventListener('pointerdown', (e) => {
         if(e.target.closest('#ui-controls') || e.target.closest('#page-nav') || e.target.closest('#reset-btn')) return;
         
         pointers[e.pointerId] = e;
@@ -369,7 +495,8 @@
             let pts = Object.values(pointers);
             initialPinchDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
             initialScale = scale;
-            if(flatState !== 0) resetFlatModeUI();
+            // PERUBAHAN: Dihapus agar saat dicubit (pinch zoom), mode datar tidak tertutup
+            // if(flatState !== 0) resetFlatModeUI(); 
         }
     });
 
@@ -398,8 +525,12 @@
                 const dt = Math.max(performance.now() - lastTime, 1);
                 vY = (dx / dt) * 12; 
                 vX = -(dy / dt) * 12;
-                rotY += dx * 0.4; 
-                rotX = clamp(rotX - dy * 0.4, -80, 260);
+                
+                // PERUBAHAN: Hanya izinkan memutar 3D jika sedang TIDAK di mode datar
+                if (flatState === 0) {
+                    rotY += dx * 0.4; 
+                    rotX = clamp(rotX - dy * 0.4, -80, 260);
+                }
                 
                 startX = e.clientX; startY = e.clientY; 
                 lastTime = performance.now();
@@ -432,7 +563,13 @@
         cancelAnimationFrame(animationFrame);
         function tick() {
             if (Math.abs(vX) < 0.05 && Math.abs(vY) < 0.05) return;
-            rotX = clamp(rotX + vX, -80, 260); rotY += vY;
+            
+            // PERUBAHAN: Inertia memutar hanya jalan jika tidak di mode datar
+            if (flatState === 0) {
+                rotX = clamp(rotX + vX, -80, 260); 
+                rotY += vY;
+            }
+            
             vX *= 0.92; vY *= 0.92;
             applyTransform();
             animationFrame = requestAnimationFrame(tick);
@@ -444,7 +581,8 @@
         e.preventDefault();
         scale = clamp(scale - e.deltaY * 0.001, 0.3, 2.5);
         applyTransform();
-        if(flatState !== 0) resetFlatModeUI();
+        // PERUBAHAN: Dihapus agar scroll/zoom tidak menutup mode datar otomatis
+        // if(flatState !== 0) resetFlatModeUI();
     }, { passive: false });
 
     window.addEventListener('resize', () => {
@@ -456,6 +594,7 @@
     function resetView() {
         resetFlatModeUI();
         targetRotation(-15, 15, getInitialScale(), 0);
+        if (currentGuideStep < 5) updateGuide();
     }
 </script>
 </body>
